@@ -1,10 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
-using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenXmlTest
 {
@@ -35,27 +31,63 @@ namespace OpenXmlTest
             }
             if (totalRows == 1)
             {
-                if(isLeft) return CellPosition.OneRowLeft;
-                if(isRight) return CellPosition.OneRowRight;
+                if (isLeft)
+                {
+                    return CellPosition.OneRowLeft;
+                }
+                if (isRight)
+                {
+                    return CellPosition.OneRowRight;
+                }
 
                 return CellPosition.OneRowInner;
             }
-            if(totalCols == 1)
+            if (totalCols == 1)
             {
-                if(isTop) return CellPosition.OneColsTop;
-                if(isBottom) return CellPosition.OneColsBottom;
+                if (isTop)
+                {
+                    return CellPosition.OneColsTop;
+                }
+                if (isBottom)
+                {
+                    return CellPosition.OneColsBottom;
+                }
 
                 return CellPosition.OneColsInner;
             }
 
-            if (isTop && isLeft) return CellPosition.TopLeft;
-            if (isTop && isRight) return CellPosition.TopRight;
-            if (isBottom && isLeft) return CellPosition.BottomLeft;
-            if (isBottom && isRight) return CellPosition.BottomRight;
-            if (isTop) return CellPosition.Top;
-            if (isBottom) return CellPosition.Bottom;
-            if (isLeft) return CellPosition.Left;
-            if (isRight) return CellPosition.Right;
+            if (isTop && isLeft)
+            {
+                return CellPosition.TopLeft;
+            }
+            if (isTop && isRight)
+            {
+                return CellPosition.TopRight;
+            }
+            if (isBottom && isLeft)
+            {
+                return CellPosition.BottomLeft;
+            }
+            if (isBottom && isRight)
+            {
+                return CellPosition.BottomRight;
+            }
+            if (isTop)
+            {
+                return CellPosition.Top;
+            }
+            if (isBottom)
+            {
+                return CellPosition.Bottom;
+            }
+            if (isLeft)
+            {
+                return CellPosition.Left;
+            }
+            if (isRight)
+            {
+                return CellPosition.Right;
+            }
 
             return CellPosition.Inner;
 
@@ -257,21 +289,12 @@ namespace OpenXmlTest
                 )
             };
 
-            //for(int i = 0; i < 15; i++)
-            //{
-
-
-            //}
-
-
-
             CellFormat[] cellFormats = new CellFormat[borders.Length];
-            
-            for ( int i = 0; i < borders.Length; i++)
+
+            for (int i = 0; i < borders.Length; i++)
             {
                 cellFormats[i] = new CellFormat { BorderId = (uint)i, ApplyBorder = true };
             }
-
 
             return new Stylesheet(
                 // Определяем шрифты
