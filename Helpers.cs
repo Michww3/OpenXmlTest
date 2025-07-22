@@ -17,81 +17,19 @@ namespace OpenXmlTest
                 this.BorderId = BorderId;
             }
         }
+
         //получение позиции ячейки
-        public static CellPosition GetCellPosition(int colIndex, int totalCols, int rowIndex = 0, int totalRows = 0)
+        public static BorderStyle GetBorderStyle(int colIndex, int totalColumns, int rowIndex = 0, int totalRows = 1)
         {
-            bool isTop = rowIndex == 0;
-            bool isBottom = rowIndex == totalRows - 1;
-            bool isLeft = colIndex == 0;
-            bool isRight = colIndex == totalCols - 1;
+            BorderStyle style = ~((colIndex == 0 ? BorderStyle.Left : BorderStyle.None) |
+                                (colIndex == totalColumns - 1 ? BorderStyle.Right : BorderStyle.None) |
+                                (rowIndex == 0 ? BorderStyle.Top : BorderStyle.None) |
+                                (rowIndex == totalRows - 1 ? BorderStyle.Bottom : BorderStyle.None)) &
+                                (BorderStyle.Left | BorderStyle.Right | BorderStyle.Top | BorderStyle.Bottom);
 
-            if (totalRows == 1 && totalCols == 1)
-            {
-                return CellPosition.OneRowOne;
-            }
-            if (totalRows == 1)
-            {
-                if (isLeft)
-                {
-                    return CellPosition.OneRowLeft;
-                }
-                if (isRight)
-                {
-                    return CellPosition.OneRowRight;
-                }
-
-                return CellPosition.OneRowInner;
-            }
-            if (totalCols == 1)
-            {
-                if (isTop)
-                {
-                    return CellPosition.OneColsTop;
-                }
-                if (isBottom)
-                {
-                    return CellPosition.OneColsBottom;
-                }
-
-                return CellPosition.OneColsInner;
-            }
-
-            if (isTop && isLeft)
-            {
-                return CellPosition.TopLeft;
-            }
-            if (isTop && isRight)
-            {
-                return CellPosition.TopRight;
-            }
-            if (isBottom && isLeft)
-            {
-                return CellPosition.BottomLeft;
-            }
-            if (isBottom && isRight)
-            {
-                return CellPosition.BottomRight;
-            }
-            if (isTop)
-            {
-                return CellPosition.Top;
-            }
-            if (isBottom)
-            {
-                return CellPosition.Bottom;
-            }
-            if (isLeft)
-            {
-                return CellPosition.Left;
-            }
-            if (isRight)
-            {
-                return CellPosition.Right;
-            }
-
-            return CellPosition.Inner;
-
+            return style;
         }
+
         //получение типа данных ячейки
         public static CellType GetCellType(DataColumn dataColumn)
         {
@@ -116,6 +54,7 @@ namespace OpenXmlTest
                     return CellType.String;
             }
         }
+
         //закрепелние заголовка и применение фильтра
         public static void ApplyFilterAndFreezePane(Worksheet worksheet, uint columnCount)
         {
@@ -171,129 +110,26 @@ namespace OpenXmlTest
         //начальная инициализация стилей
         public static Stylesheet InitStylesheet()
         {
-            Border[] borders = new Border[]
-            {
-                // 0 - default
-                new Border(),
-                // 1 - толстые границы сверху и снизу
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 2 - толстые границы сверху снизу и слева
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 3 - толстые границы сверху снизу и справа
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 4 - толстые границы  со всех сторон
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 5 - верхняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 6 - правая верхняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 7 - правая средняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 8 - правая нижняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 9 - нижняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 10 - левая нижняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 11 - левая средняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 12 - левая верхняя ячейка
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 13 - тонкие границы со всех сторон
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 14 - толстые границы сверху и по бокам
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                ),
-                // 15 - толстые границы снизу и по бокам
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } }
-                ),
-                // 16 - толстые по бокам
-                new Border(
-                    new LeftBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new RightBorder { Style = BorderStyleValues.Thick, Color = new Color { Auto = true } },
-                    new TopBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } },
-                    new BottomBorder { Style = BorderStyleValues.Thin, Color = new Color { Auto = true } }
-                )
-            };
+            CellFormats cellFormats = new CellFormats();
+            Borders borders = new Borders();
 
-            CellFormat[] cellFormats = new CellFormat[borders.Length];
-
-            for (int i = 0; i < borders.Length; i++)
+            for (int i = 0; i < 16; i++)
             {
-                cellFormats[i] = new CellFormat { BorderId = (uint)i, ApplyBorder = true };
+                BorderStyleValues borderStyleLeft = (i & 1) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
+                BorderStyleValues borderStyleRight = (i & 2) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
+                BorderStyleValues borderStyleTop = (i & 4) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
+                BorderStyleValues borderStyleBottom = (i & 8) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
+
+                borders.Append(
+                    new Border(
+                        new LeftBorder { Style = borderStyleLeft, Color = new Color { Auto = true } },
+                        new RightBorder { Style = borderStyleRight, Color = new Color { Auto = true } },
+                        new TopBorder { Style = borderStyleTop, Color = new Color { Auto = true } },
+                        new BottomBorder { Style = borderStyleBottom, Color = new Color { Auto = true } }
+                    )
+                );
+
+                cellFormats.Append(new CellFormat { BorderId = (uint)i, ApplyBorder = true });
             }
 
             return new Stylesheet(
@@ -307,10 +143,9 @@ namespace OpenXmlTest
                     new Fill(new PatternFill() { PatternType = PatternValues.None })     // 0 - без заливки
                 ),
 
-                // Определяем границы ячеек
-                new Borders(borders),
+                borders,
 
-                new CellFormats(cellFormats)
+                cellFormats
             );
         }
     }

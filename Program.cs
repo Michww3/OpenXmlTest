@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,8 +23,8 @@ namespace OpenXmlTest
             myTable.Columns.Add("Дата рождения", typeof(DateTime));
             myTable.Columns.Add("Студент", typeof(bool));
             myTable.Columns.Add("Баллы", typeof(double));
-            myTable.Columns.Add("Опыт (лет)", typeof(int));     // ✅ Добавлено ранее
-            myTable.Columns.Add("Проекты", typeof(int));        // ✅ Новая колонка
+            myTable.Columns.Add("Опыт (лет)", typeof(int));     
+            myTable.Columns.Add("Проекты", typeof(int));      
 
             myTable.Rows.Add("Алексей", 30, "Минск", new DateTime(1994, 5, 10), true, 87.5, 8, 15);
             myTable.Rows.Add("Мария", 25, "Гомель", new DateTime(1999, 11, 23), false, 92.3, 3, 7);
@@ -97,8 +98,9 @@ namespace OpenXmlTest
                     {
                         DataType = CellValues.String,
                         CellValue = new CellValue(table.Columns[i].ColumnName),
-                        StyleIndex = (uint)Helpers.GetCellPosition(i,table.Columns.Count)
+                        StyleIndex = (uint)Helpers.GetBorderStyle(i, table.Columns.Count)
                     };
+
                     headerRow.Append(cell);
                 }
                 sheetData.Append(headerRow);
@@ -119,7 +121,7 @@ namespace OpenXmlTest
                         DataColumn currentColumn = table.Columns[columnIndex];
 
                         CellType cellType = Helpers.GetCellType(currentColumn);
-                        CellPosition cellPosition = Helpers.GetCellPosition(columnIndex, table.Columns.Count, rowIndex, table.Rows.Count);
+                        BorderStyle borderStyle = Helpers.GetBorderStyle(columnIndex, table.Columns.Count, rowIndex, table.Rows.Count);
 
                         switch (cellType)
                         {
@@ -127,17 +129,14 @@ namespace OpenXmlTest
 
                                 cell.CellValue = new CellValue(Convert.ToString(value, CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Integer, (uint)cellPosition, ref styleIndexCounter); // для целых чисел
-
+                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Integer, (uint)borderStyle, ref styleIndexCounter); // для целых чисел
                                 break;
 
                             case CellType.Float:
 
                                 cell.CellValue = new CellValue(Convert.ToString(value, CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Float, (uint)cellPosition, ref styleIndexCounter); // 
-
+                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Float, (uint)borderStyle, ref styleIndexCounter); // 
                                 break;
 
                             case CellType.DateTime:
@@ -145,22 +144,21 @@ namespace OpenXmlTest
                                 DateTime dt = (DateTime)value;
                                 cell.CellValue = new CellValue(dt.ToOADate().ToString(CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.DateTime, (uint)cellPosition, ref styleIndexCounter); // 
-
+                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.DateTime, (uint)(uint)borderStyle, ref styleIndexCounter); // 
                                 break;
 
                             case CellType.Boolean:
 
                                 cell.CellValue = new CellValue((bool)value ? "Да" : "Нет");
                                 cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell.StyleIndex = (uint)cellPosition;
+                                cell.StyleIndex = (uint)borderStyle;
                                 break;
 
                             default:
 
                                 cell.CellValue = new CellValue(textValue);
                                 cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell.StyleIndex = (uint)cellPosition;
+                                cell.StyleIndex = (uint)borderStyle;
                                 break;
                         }
 

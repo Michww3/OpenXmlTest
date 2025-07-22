@@ -1,23 +1,15 @@
-﻿namespace OpenXmlTest
+﻿using System;
+
+namespace OpenXmlTest
 {
-    public enum CellPosition : uint
+    [Flags]
+    public enum BorderStyle
     {
-        OneRowInner = 1,
-        OneRowLeft,
-        OneRowRight,
-        OneRowOne,
-        Top = 5,
-        TopRight,
-        Right,
-        BottomRight,
-        Bottom,
-        BottomLeft,
-        Left,
-        TopLeft,
-        Inner,
-        OneColsTop,
-        OneColsBottom,
-        OneColsInner
+        None = 0,
+        Left = 1 << 0,
+        Right = 1 << 1,
+        Top = 1 << 2,
+        Bottom = 1 << 3
     }
 
     public enum CellType : uint
