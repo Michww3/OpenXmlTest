@@ -6,16 +6,12 @@ using System.Threading.Tasks;
 
 namespace OpenXmlTest
 {
-    public enum HeaderPosition
-    {
-        Inner = 1,
-        Left,
-        Right,
-        One
-    }
-
     public enum CellPosition : uint
     {
+        OneRowInner = 1,
+        OneRowLeft,
+        OneRowRight,
+        OneRowOne,
         Top = 5,
         TopRight,
         Right,
@@ -24,7 +20,10 @@ namespace OpenXmlTest
         BottomLeft,
         Left,
         TopLeft,
-        Inner
+        Inner,
+        OneColsTop,
+        OneColsBottom,
+        OneColsInner
     }
 
     public enum CellType : uint

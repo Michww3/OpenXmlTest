@@ -41,7 +41,11 @@ namespace OpenXmlTest
             myTable.Rows.Add("Олег", 38, "Могилёв", new DateTime(1985, 1, 20), false, 83.6, 14, 18);
 
             //myTable.Columns.Add("Name", typeof(string));
-            //myTable.Rows.Add("Alice");
+            //myTable.Columns.Add("Возраст", typeof(int));
+
+            //myTable.Rows.Add("Alice", 12);
+            //myTable.Rows.Add("Alice", 12);
+            //myTable.Rows.Add("Alice", 12);
             //myTable.Rows.Add("Bob");
             //myTable.Rows.Add("Charlie");
             //myTable.Rows.Add("Diana");
@@ -94,7 +98,7 @@ namespace OpenXmlTest
                     {
                         DataType = CellValues.String,
                         CellValue = new CellValue(table.Columns[i].ColumnName),
-                        StyleIndex = Helpers.GetHeaderPosition(table.Columns.Count, i)
+                        StyleIndex = (uint)Helpers.GetCellPosition(i,table.Columns.Count)
                     };
                     headerRow.Append(cell);
                 }
@@ -116,7 +120,7 @@ namespace OpenXmlTest
                         DataColumn currentColumn = table.Columns[columnIndex];
 
                         CellType cellType = Helpers.GetCellType(currentColumn);
-                        CellPosition cellPosition = Helpers.GetCellPosition(rowIndex, table.Rows.Count, columnIndex, table.Columns.Count);
+                        CellPosition cellPosition = Helpers.GetCellPosition(columnIndex, table.Columns.Count, rowIndex, table.Rows.Count);
 
                         switch (cellType)
                         {
