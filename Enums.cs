@@ -27,12 +27,12 @@ namespace OpenXmlTest
         Inner
     }
 
-    public enum CellType
+    public enum CellType : uint
     {
+        Integer = 1,
+        Float = 2,
+        DateTime = 22,
         String,
-        Integer,
-        Float,
-        DateTime,
         Boolean
     }
 
