@@ -14,11 +14,12 @@ namespace OpenXmlTest
 
     public enum CellType : uint
     {
+        Boolean = 0,
         Integer = 1,
         Float = 2,
         DateTime = 22,
-        String,
-        Boolean
+        String = 49,
+        Percent = 9
     }
 
 }

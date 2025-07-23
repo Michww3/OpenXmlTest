@@ -1,17 +1,14 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
-using static OpenXmlTest.Helpers;
 
 namespace OpenXmlTest
 {
-    internal class Program
+    class Programm
     {
         static void Main(string[] args)
         {
@@ -23,8 +20,8 @@ namespace OpenXmlTest
             myTable.Columns.Add("Дата рождения", typeof(DateTime));
             myTable.Columns.Add("Студент", typeof(bool));
             myTable.Columns.Add("Баллы", typeof(double));
-            myTable.Columns.Add("Опыт (лет)", typeof(int));     
-            myTable.Columns.Add("Проекты", typeof(int));      
+            myTable.Columns.Add("Опыт (лет)", typeof(int));
+            myTable.Columns.Add("Проекты", typeof(int));
 
             myTable.Rows.Add("Алексей", 30, "Минск", new DateTime(1994, 5, 10), true, 87.5, 8, 15);
             myTable.Rows.Add("Мария", 25, "Гомель", new DateTime(1999, 11, 23), false, 92.3, 3, 7);
@@ -49,8 +46,9 @@ namespace OpenXmlTest
             //myTable.Rows.Add("Bob");
             //myTable.Rows.Add("Charlie");
             //myTable.Rows.Add("Diana");
+            ExcelExporter excelExporter = new ExcelExporter();
 
-            ExcelExporter.ExportDataTableToExcel(myTable, @"C:\\Users\\zimnitskyaa\\Desktop\\test1.xlsx");
+            excelExporter.ExportDataTableToExcel(myTable, @"C:\\Users\\zimnitskyaa\\Desktop\\test1.xlsx");
 
             Process.Start(new ProcessStartInfo()
             {
@@ -60,12 +58,13 @@ namespace OpenXmlTest
         }
     }
 
-    public static class ExcelExporter
+    public class ExcelExporter
     {
-        public static void ExportDataTableToExcel(DataTable table, string filePath)
+        public void ExportDataTableToExcel(DataTable table, string filePath)
         {
             using (SpreadsheetDocument document = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
             {
+                Helpers helpers = new Helpers();
                 WorkbookPart workbookPart = document.AddWorkbookPart();
                 workbookPart.Workbook = new Workbook();
 
@@ -84,11 +83,8 @@ namespace OpenXmlTest
 
                 // Создание стилей
                 WorkbookStylesPart stylesPart = workbookPart.AddNewPart<WorkbookStylesPart>();
-                Stylesheet stylesheet = Helpers.InitStylesheet();
-
+                Stylesheet stylesheet = helpers.InitStylesheet();
                 stylesPart.Stylesheet = stylesheet;
-
-                uint styleIndexCounter = (uint)stylesheet.CellFormats.ChildElements.Count;
 
                 // Заголовок
                 Row headerRow = new Row();
@@ -98,18 +94,16 @@ namespace OpenXmlTest
                     {
                         DataType = CellValues.String,
                         CellValue = new CellValue(table.Columns[i].ColumnName),
-                        StyleIndex = (uint)Helpers.GetBorderStyle(i, table.Columns.Count)
+                        StyleIndex = (uint)Helpers.GetBorderStyle(i, table.Columns.Count) + 1
                     };
 
                     headerRow.Append(cell);
                 }
                 sheetData.Append(headerRow);
 
-                Helpers.ApplyFilterAndFreezePane(worksheetPart.Worksheet, (uint)table.Columns.Count);
+                helpers.ApplyFilterAndFreezePane(worksheetPart.Worksheet, (uint)table.Columns.Count);
 
                 // Данные
-                Dictionary<StyleKey, uint> styleCache = new Dictionary<StyleKey, uint>();
-
                 for (int rowIndex = 0; rowIndex < table.Rows.Count; rowIndex++)
                 {
                     Row dataRow = new Row();
@@ -117,11 +111,12 @@ namespace OpenXmlTest
                     {
                         Cell cell = new Cell();
                         object value = table.Rows[rowIndex][columnIndex];
-                        string textValue = value?.ToString() ?? string.Empty;
                         DataColumn currentColumn = table.Columns[columnIndex];
 
-                        CellType cellType = Helpers.GetCellType(currentColumn);
+                        CellType cellType = helpers.GetCellType(currentColumn);
+
                         BorderStyle borderStyle = Helpers.GetBorderStyle(columnIndex, table.Columns.Count, rowIndex, table.Rows.Count);
+                        uint borderStyleIndex = (uint)borderStyle + 1;
 
                         switch (cellType)
                         {
@@ -129,14 +124,14 @@ namespace OpenXmlTest
 
                                 cell.CellValue = new CellValue(Convert.ToString(value, CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Integer, (uint)borderStyle, ref styleIndexCounter); // для целых чисел
+                                cell.StyleIndex = helpers.GetStyle(stylesheet, (uint)CellType.Integer, borderStyleIndex); // для целых чисел
                                 break;
 
                             case CellType.Float:
 
                                 cell.CellValue = new CellValue(Convert.ToString(value, CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.Float, (uint)borderStyle, ref styleIndexCounter); // 
+                                cell.StyleIndex = helpers.GetStyle(stylesheet, (uint)CellType.Float, borderStyleIndex); // для целых чисел
                                 break;
 
                             case CellType.DateTime:
@@ -144,21 +139,21 @@ namespace OpenXmlTest
                                 DateTime dt = (DateTime)value;
                                 cell.CellValue = new CellValue(dt.ToOADate().ToString(CultureInfo.InvariantCulture));
                                 cell.DataType = new EnumValue<CellValues>(CellValues.Number);
-                                cell.StyleIndex = Helpers.GetOrCreateStyle(stylesheet, styleCache, (uint)CellType.DateTime, (uint)(uint)borderStyle, ref styleIndexCounter); // 
+                                cell.StyleIndex = helpers.GetStyle(stylesheet, (uint)CellType.DateTime, borderStyleIndex);
                                 break;
 
                             case CellType.Boolean:
 
                                 cell.CellValue = new CellValue((bool)value ? "Да" : "Нет");
                                 cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell.StyleIndex = (uint)borderStyle;
+                                cell.StyleIndex = borderStyleIndex;
                                 break;
 
                             default:
 
-                                cell.CellValue = new CellValue(textValue);
+                                cell.CellValue = new CellValue(value?.ToString());
                                 cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell.StyleIndex = (uint)borderStyle;
+                                cell.StyleIndex = borderStyleIndex;
                                 break;
                         }
 

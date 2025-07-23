@@ -1,37 +1,25 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace OpenXmlTest
 {
     internal class Helpers
     {
-        public struct StyleKey
-        {
-            uint NumberFormatId;
-            uint BorderId;
-
-            public StyleKey(uint NumberFormatId, uint BorderId)
-            {
-                this.NumberFormatId = NumberFormatId;
-                this.BorderId = BorderId;
-            }
-        }
-
         //получение позиции ячейки
         public static BorderStyle GetBorderStyle(int colIndex, int totalColumns, int rowIndex = 0, int totalRows = 1)
         {
-            BorderStyle style = ~((colIndex == 0 ? BorderStyle.Left : BorderStyle.None) |
+            BorderStyle style = (colIndex == 0 ? BorderStyle.Left : BorderStyle.None) |
                                 (colIndex == totalColumns - 1 ? BorderStyle.Right : BorderStyle.None) |
                                 (rowIndex == 0 ? BorderStyle.Top : BorderStyle.None) |
-                                (rowIndex == totalRows - 1 ? BorderStyle.Bottom : BorderStyle.None)) &
-                                (BorderStyle.Left | BorderStyle.Right | BorderStyle.Top | BorderStyle.Bottom);
+                                (rowIndex == totalRows - 1 ? BorderStyle.Bottom : BorderStyle.None);
 
             return style;
         }
 
         //получение типа данных ячейки
-        public static CellType GetCellType(DataColumn dataColumn)
+        public CellType GetCellType(DataColumn dataColumn)
         {
             switch (dataColumn.DataType.Name)
             {
@@ -56,7 +44,7 @@ namespace OpenXmlTest
         }
 
         //закрепелние заголовка и применение фильтра
-        public static void ApplyFilterAndFreezePane(Worksheet worksheet, uint columnCount)
+        public void ApplyFilterAndFreezePane(Worksheet worksheet, uint columnCount)
         {
             //Создаем панель заморозки (Freeze Pane)
             SheetViews sheetViews = new SheetViews();
@@ -82,43 +70,45 @@ namespace OpenXmlTest
             worksheet.Append(autoFilter);
         }
 
-        public static uint GetOrCreateStyle(Stylesheet stylesheet, Dictionary<StyleKey, uint> styleCache, uint excelNumberFormatId, uint borderId, ref uint styleIndexCounter)
+        public uint GetStyle(Stylesheet stylesheet, uint cellTypeId, uint borderId)
         {
-            var key = new StyleKey(excelNumberFormatId, borderId);
+            List<CellFormat> cellFormats = stylesheet.CellFormats.Elements<CellFormat>().ToList();
 
-            if (styleCache.TryGetValue(key, out uint existingIndex))
-                return existingIndex;
+            CellFormat cellFormat = cellFormats.FirstOrDefault(x => x.NumberFormatId == cellTypeId && x.BorderId == borderId);
+
+            if (cellFormat != null)
+            {
+                return (uint)cellFormats.IndexOf(cellFormat);
+            }
 
             // создаём новый стиль
-            var cellFormat = new CellFormat
+            cellFormat = new CellFormat
             {
-                NumberFormatId = excelNumberFormatId,
+                NumberFormatId = cellTypeId,
                 ApplyNumberFormat = true,
                 BorderId = borderId,
                 ApplyBorder = true
             };
 
             stylesheet.CellFormats.Append(cellFormat);
-            stylesheet.CellFormats.Count = (uint)stylesheet.CellFormats.ChildElements.Count;
 
-            uint newIndex = styleIndexCounter++;
-            styleCache[key] = newIndex;
-
-            return newIndex;
+            return (uint)stylesheet.CellFormats.ChildElements.Count - 1;
         }
 
         //начальная инициализация стилей
-        public static Stylesheet InitStylesheet()
+        public Stylesheet InitStylesheet()
         {
             CellFormats cellFormats = new CellFormats();
             Borders borders = new Borders();
+            borders.Append(new Border());
+            cellFormats.Append(new CellFormat { NumberFormatId = (uint)CellType.String, ApplyNumberFormat = true, BorderId = 0, ApplyBorder = true });
 
             for (int i = 0; i < 16; i++)
             {
-                BorderStyleValues borderStyleLeft = (i & 1) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
-                BorderStyleValues borderStyleRight = (i & 2) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
-                BorderStyleValues borderStyleTop = (i & 4) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
-                BorderStyleValues borderStyleBottom = (i & 8) != 0 ? BorderStyleValues.Thin : BorderStyleValues.Thick;
+                BorderStyleValues borderStyleLeft = (i & 1) != 0 ? BorderStyleValues.Thick : BorderStyleValues.Thin;
+                BorderStyleValues borderStyleRight = (i & 2) != 0 ? BorderStyleValues.Thick : BorderStyleValues.Thin;
+                BorderStyleValues borderStyleTop = (i & 4) != 0 ? BorderStyleValues.Thick : BorderStyleValues.Thin;
+                BorderStyleValues borderStyleBottom = (i & 8) != 0 ? BorderStyleValues.Thick : BorderStyleValues.Thin;
 
                 borders.Append(
                     new Border(
@@ -129,18 +119,20 @@ namespace OpenXmlTest
                     )
                 );
 
-                cellFormats.Append(new CellFormat { BorderId = (uint)i, ApplyBorder = true });
+                uint borderId = (uint)borders.ChildElements.Count - 1;
+
+                cellFormats.Append(new CellFormat {NumberFormatId = (uint)CellType.String, ApplyNumberFormat = true, BorderId = borderId, ApplyBorder = true });
             }
 
             return new Stylesheet(
                 // Определяем шрифты
                 new Fonts(
-                    new Font() // 0 - обычный шрифт
+                    new Font()
                 ),
 
-                // Определяем заливки (фоны ячеек)
+                // Определяем заливки
                 new Fills(
-                    new Fill(new PatternFill() { PatternType = PatternValues.None })     // 0 - без заливки
+                    new Fill(new PatternFill() { PatternType = PatternValues.None })
                 ),
 
                 borders,
